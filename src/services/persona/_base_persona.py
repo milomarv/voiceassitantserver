@@ -43,6 +43,18 @@ class BasePersona(BaseModel):
     personality: list[str] = []
     sounds: PersonaSounds
 
+    def __init__(self, other_persona_names: list[str] | None = None, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        if other_persona_names:
+            self.personality.append(
+                f"Du kennst die folgenden anderen Persönlichkeiten: {', '.join(other_persona_names)}.",
+            )
+            self.personality.append("Wenn man dich nach anderen Persönlichkeiten fragt, nenne NUR diese Namen.")
+            self.personality.append(
+                "Erwähne KEINE Eigenschaften oder Details über diese anderen Persönlichkeiten, außer ihren Namen.",
+            )
+            self.personality.append("Stattdessen kann dein Gegenüber diese Namen nennen, um sie auszuprobieren.")
+
     @property
     def system_prompt(self) -> str:
         extended_personality = [f"Dein Name ist {self.name}.", *self.personality]

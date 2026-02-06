@@ -55,20 +55,30 @@ class Kosmos(BasePersona):
 class PersonaService(BaseService):
     def __init__(self) -> None:
         super().__init__("Persona")
-        self.talos = Talos()
-        self.solaris = Solaris()
-        self.kosmos = Kosmos()
+        self.talos = Talos
+        self.solaris = Solaris
+        self.kosmos = Kosmos
+
+    def _is_persona(self, obj: object) -> bool:
+        return isinstance(obj, type) and issubclass(obj, BasePersona) and obj is not BasePersona
 
     def list_personas(self) -> list[BasePersona]:
-        return [persona for persona in self.__dict__.values() if isinstance(persona, BasePersona)]
+        return [persona() for persona in self.__dict__.values() if self._is_persona(persona)]
 
     def list_names(self) -> list[str]:
-        return [persona.name for persona in self.__dict__.values() if isinstance(persona, BasePersona)]
+        return [persona().name for persona in self.__dict__.values() if self._is_persona(persona)]
 
     def get_persona(self, name: str) -> BasePersona | None:
+        desired_persona = None
+        other_persona_names = []
         for persona in self.__dict__.values():
-            if isinstance(persona, BasePersona) and persona.name == name:
-                self.logger.info(f"Retrieved persona: {name}")
-                return persona
+            if self._is_persona(persona):
+                if persona().name == name:
+                    self.logger.info(f"Retrieved persona: {name}")
+                    desired_persona = persona
+                else:
+                    other_persona_names.append(persona().name)
+        if desired_persona:
+            return desired_persona(other_persona_names=other_persona_names)
         self.logger.warning(f"Persona not found: {name}")
         return None
